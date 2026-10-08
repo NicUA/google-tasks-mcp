@@ -283,13 +283,10 @@ app.get("/oauth/authorize", (req, res) => {
     state,
     exp: Math.floor(Date.now()/1000) + 600
   });
-  res.type("html").send(`<!doctype html><html><body style="font-family:system-ui;max-width:560px;margin:50px auto;padding:20px"><h2>Connect Google Tasks to ChatGPT</h2><p>This grants read-only access to your Google Tasks through your private connector.</p><form method="post" action="/oauth/approve"><input type="hidden" name="request" value="${request}"><label>Connector password<br><input type="password" name="password" required style="width:100%;padding:10px;margin:8px 0 16px"></label><button type="submit" style="padding:10px 18px">Allow</button></form></body></html>`);
+  res.type("html").send(`<!doctype html><html><body style="font-family:system-ui;max-width:560px;margin:50px auto;padding:20px"><h2>Authorize Tasks Connector</h2><p>This grants read-only access to Google Tasks through this connector. The OAuth client is restricted to ChatGPT callback URLs.</p><form method="post" action="/oauth/approve"><input type="hidden" name="request" value="${request}"><button type="submit" style="padding:10px 18px">Allow read-only access</button></form></body></html>`);
 });
 
 app.post("/oauth/approve", (req, res) => {
-  if (!MCP_AUTH_TOKEN || String(req.body.password || "") !== MCP_AUTH_TOKEN) {
-    return res.status(403).send("Incorrect connector password");
-  }
   const ar = unseal(req.body.request, "authreq");
   if (!ar) return res.status(400).send("Expired or invalid authorization request");
   const code = seal({
